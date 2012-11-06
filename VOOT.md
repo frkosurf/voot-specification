@@ -124,22 +124,19 @@ cannot be modified by the user themselves. The `emails` field contains a list
 of email addresses belonging to the user. 
 
 ## Request Parameters
-The API calls have four OPTIONAL parameters that manipulate the result obtained 
+The API calls have three OPTIONAL parameters that manipulate the result obtained 
 from the provider:
 
 * `sortBy`
-* `sortOrder`
 * `startIndex`
 * `count`
 
 The `sortBy` parameter determines the key in the result that is used for sorting
 the groups or group members. The available keys are listed below in the API 
-Response section. The `sortOrder` determines the order in which the results are 
-sorted. Here, two values are possible: `ascending` and `descending`. These 
-parameters are OPTIONAL. It is up to the provider whether or not to sort and 
-in what order if these parameters are not present. If the results are to be 
+Response section. It is up to the provider whether or not to sort and by what 
+key in what order if these parameters are not present. If the results are to be 
 sorted, the value SHOULD be compared as strings and SHOULD be sorted 
-case-insensitive.
+case-insensitive in ascending order.
 
 The `startIndex` parameter determines the offset at which the start for giving
 back results. The `count` parameter indicates the number of results to be
@@ -151,9 +148,9 @@ and `count` equal to the total number of items available in the set.
 The sorting, if requested, MUST be performed on the provider before considering 
 the `startIndex` and `count` parameters.
 
-For the API call requesting user information the `sortBy` and `sortOrder` 
-parameters have no effect. Using `startIndex` and `count` is possible, 
-however they are of little use as there always will be only one answer.
+For the API call requesting user information the `sortBy` parameter has no 
+effect. Using `startIndex` and `count` is possible, however they are of little 
+use as there always will be only one answer.
 
 ## Response Parameters
 All responses mentioned above have the same format. There are always four keys:
@@ -181,7 +178,7 @@ members and information about the user.
 This is an example of the response to the query:
 
     Host: provider.example.org
-    GET /groups/@me?sortBy=title&sortOrder=ascending HTTP/1.1
+    GET /groups/@me?sortBy=title HTTP/1.1
     
 The response looks like this:
 
@@ -212,7 +209,7 @@ The response looks like this:
 This is an example of the response to the query:
 
     Host: provider.example.org
-    GET /people/@me/members?sortBy=displayName&sortOrder=descending&startIndex=3&count=2 HTTP/1.1
+    GET /people/@me/members?sortBy=displayName&startIndex=3&count=2 HTTP/1.1
     
 The response looks like this:
 
@@ -289,8 +286,6 @@ holds that if any of those values are invalid they are set to their defaults:
   `totalResults`;
 * `sortBy`: if the specified key is invalid, i.e.: not part of the entries, 
   sorting is disabled;
-* `sortOrder`: if this value is neither `ascending` nor `descending` it is 
-  set to `ascending`, if `sortBy` is specified and valid.
 
 The error response is returned as JSON, for example:
 
@@ -299,10 +294,9 @@ The error response is returned as JSON, for example:
 
     {
         "error": "invalid_user", 
-        "error_description": "the user does not exist"
     }
 
-The `error` field MUST be present, the `error_description` field is OPTIONAL.
+The `error` field MUST be present.
  
 ## Retrieve Group Membership
 The call looks like this:
