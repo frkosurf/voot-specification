@@ -21,9 +21,9 @@ secure fashion. This is where VOOT steps in.
 # Authorization
 This specification will consider two authorization models:
 
-* Basic Authentication [RFC xxxx] if the VOOT provider trusts the client not to
+* Basic Authentication [RFC 2617] if the VOOT provider trusts the client not to
   abuse full access to the user database;
-* OAuth 2.0 [RFC xxxx] if there is minimal trust between the VOOT provider and 
+* OAuth 2.0 [RFC 6749] if there is minimal trust between the VOOT provider and 
   the client where it is left to the user to authorize the client explicitly
   that wants to access information about just the user that grants the 
   permission.
@@ -201,17 +201,11 @@ The response looks like this:
                 "id": "members", 
                 "title": "Members", 
                 "voot_membership_role": "member"
-            }, 
-            {
-                "description": "Group containing the network administrators.", 
-                "id": "networkadmins", 
-                "title": "Network Administrators", 
-                "voot_membership_role": "manager"
             }
         ], 
-        "itemsPerPage": 3, 
+        "itemsPerPage": 2, 
         "startIndex": "0", 
-        "totalResults": 3
+        "totalResults": 2
     }
 
 ### Retrieve Members of a Group
@@ -254,10 +248,13 @@ The response looks liks this:
 
     {
         "entry": {
+            "commonName": "Mr. Admin I. Strator", 
             "displayName": "admin", 
-            "id": "admin",
-            "emails": [ "admin@example.org", "postmaster@example.org" ],
-            "commonName": "Mr. Admin I. Strator"
+            "emails": [
+                "admin@example.org", 
+                "postmaster@example.org"
+            ], 
+            "id": "admin"
         }, 
         "itemsPerPage": 1, 
         "startIndex": 0, 
@@ -267,16 +264,21 @@ The response looks liks this:
 # Error Handling
 Handling failures of Authentication, either Basic or Bearer are handled in the 
 ways described in RFC xxxx and RFC yyyy. This will involve sending the 
-`WWW-Authenticate` header if something is wrong, for example an expired 
+`WWW-Authenticate` header if something is wrong, for example an invalid 
 OAuth 2.0 access token will result in the following response:
 
-    <RESPONSE>
+    HTTP/1.1 401 Unauthorized
+    WWW-Authenticate: Bearer realm="Resource Server",error="invalid_token",error_description="the access token is not valid"
+    Content-Type: application/json
+
+    {"error":"invalid_token","error_description":"the access token is not valid"}
 
 There are also some request errors defined, i.e.: invalid requests to the 
 provider that should be dealt with in a certain manner. Only the call that 
 retrieves group membership and user information MUST be supported, the other 
 call, i.e.: retrieving members of a group does not need to be supported. 
-When this call is disabled a response code of `405 XXX` is returned.
+When this call is disabled a response code of `400 Bad Request` is returned 
+with `error` set to `unsupported_request`.
 
 For all requests that contain query parameters for limiting and sorting results 
 holds that if any of those values are invalid they are set to their defaults:
@@ -295,7 +297,10 @@ The error response is returned as JSON, for example:
     HTTP/1.1 404 Not Found
     Content-Type: application/json
 
-    {"error":"invalid_user","error_description":"the user does not exist"}
+    {
+        "error": "invalid_user", 
+        "error_description": "the user does not exist"
+    }
 
 The `error` field MUST be present, the `error_description` field is OPTIONAL.
  
@@ -370,8 +375,7 @@ group provider they belong.
 For example the user `john`, which is a local identifier at a group provider 
 can occur in multiple group providers, so it needs to be prefixed, for example
 with the identifier of the group provider. The prefixed value SHOULD be 
-opague as well, for instance using a hash function over a salt, provider_id and
-local_id.
+opague as well.
 
 # Privacy
 Opague value, @me, restricting people calls etc etc
