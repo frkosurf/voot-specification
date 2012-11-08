@@ -28,23 +28,6 @@ This specification will consider two authorization models:
   that wants to access information about just the user that grants the 
   permission.
 
-These modes can for example be combined. A proxy using the VOOT protocol can 
-use OAuth 2.0 for authorization towards clients while the proxy requests 
-other VOOT endpoints protected by Basic Authentication. This can for example be
-helpful in "hub and spoke" identity federations.
-
-                  +-------+              +----------+
-                  |       |              | VOOT     |
-                  |       +--------------+ Provider |
-                  |       |  VOOT/Basic  | A        |
-                  | VOOT  |              +----------+
-    --------------+ Proxy |
-      VOOT/OAuth  |       |              +----------+
-                  |       |              | VOOT     |
-                  |       +--------------+ Provider |
-                  |       |  VOOT/Basic  | B        |
-                  +-------+              +----------+
-
 # API
 The API supports three calls.
 
@@ -59,12 +42,15 @@ how the client obtains the identifiers.
 If the user `admin` authorized a client to act on its behalf (with OAuth), the 
 following calls have identical results:
 
+Retrieve group membership:
     /groups/@me
     /groups/admin
 
+Retrieve group members:
     /people/@me/members
     /people/admin/members
 
+Retrieve user information:
     /people/@me
     /people/admin
 
@@ -162,6 +148,14 @@ the `startIndex` and `count` parameters.
 For the API call requesting user information the `sortBy` parameter has no 
 effect. Using `startIndex` and `count` is possible, however they are of little 
 use as there always will be only one answer.
+
+Below the default value of the parameters is shown. If the parameter does not
+match the requirement it is set to the default value:
+
+* `startIndex`: (DEFAULT: 0, INT >= 0);
+* `count`: (DEFAULT: `totalResults`, INT >= 0);
+* `sortBy`: (DEFAULT: no sorting, STRING with valid key: `id`, `displayName`, 
+  `commonName`, `emails`, `title`, `description`, `voot_membership_role`).
 
 ## Response Parameters
 All responses mentioned above have the same format. There are always four keys:
@@ -271,7 +265,7 @@ The response looks liks this:
 
 # Error Handling
 Handling failures of Authentication, either Basic or Bearer are handled in the 
-ways described in RFC xxxx and RFC yyyy. This will involve sending the 
+ways described in RFC 2617 and RFC 6750. This will involve sending the 
 `WWW-Authenticate` header if something is wrong, for example an invalid 
 OAuth 2.0 access token will result in the following response:
 
@@ -287,16 +281,6 @@ retrieves group membership and user information MUST be supported, the other
 call, i.e.: retrieving members of a group does not need to be supported. 
 When this call is disabled a response code of `400 Bad Request` is returned 
 with `error` set to `unsupported_request`.
-
-For all requests that contain query parameters for limiting and sorting results 
-holds that if any of those values are invalid they are set to their defaults:
-
-* `startIndex`: if this value is negative, not a number or >= `totalResults`-1 
-  it is set to `0`;
-* `count`: if this value is negative, or not a number it is set to the value of
-  `totalResults`;
-* `sortBy`: if the specified key is invalid, i.e.: not part of the entries, 
-  sorting is disabled;
 
 The error response is returned as JSON, for example:
 
@@ -323,8 +307,8 @@ The call looks like this:
   code `404 Not Found` is returned. The `error` field contains 
   `invalid_user`;
 * If any other error occurs an error response with code 
-  `500 Internal Server Error` is returned. The `error` field MAY contain
-  more information about the error.
+  `500 Internal Server Error` is returned. The `error` field contains
+  `internal_server_error`.
 
 ## Retrieve Members of a Group
 The call looks like this:
@@ -341,13 +325,11 @@ The call looks like this:
   `invalid_user`;
 * If the specified user is not a member of the group an error response with 
   code `403 Forbidden` is returned. The `error` field contains `not_a_member`.
-  This response MUST be returned no matter whether the group exists or not;
-* If the specified group does not exist at the provider an error response with
-  code `404 Not Found` is returned. The `error` field contains 
-  `invalid_group`;
+  This response MUST be returned when the user is not a member, no matter 
+  whether the group exists or not;
 * If any other error occurs an error response with code 
-  `500 Internal Server Error` is returned. The `error` field MAY contain
-  more information about the error.
+  `500 Internal Server Error` is returned. The `error` field contains
+  `internal_server_error`.
 
 ### Retrieve User Information
 The call looks like this:
@@ -362,6 +344,9 @@ The call looks like this:
 * If the specified user does not exist at the provider an error response with
   code `404 Not Found` is returned. The `error` field contains 
   `invalid_user`;
+* If any other error occurs an error response with code 
+  `500 Internal Server Error` is returned. The `error` field contains
+  `internal_server_error`.
 
 # Proxy Operation
 One of the use cases is to make it possible to combine data from various 
@@ -369,6 +354,18 @@ group providers using one API endpoint. This way group membership information
 can be aggregated from various sources. The proxy provides a OAuth 2.0 
 protected API to clients and in the backend uses Basic Authentication to talk
 to the group providers from which it needs to aggregate data.
+
+                  +-------+              +----------+
+                  |       |              | VOOT     |
+                  |       +--------------+ Provider |
+                  |       |  VOOT/Basic  | A        |
+                  | VOOT  |              +----------+
+    --------------+ Proxy |
+      VOOT/OAuth  |       |              +----------+
+                  |       |              | VOOT     |
+                  |       +--------------+ Provider |
+                  |       |  VOOT/Basic  | B        |
+                  +-------+              +----------+
 
 From the client point of view there should be no difference in the API compared 
 to talking directly to a group provider. There are however some special error
@@ -383,7 +380,18 @@ with the identifier of the group provider. The prefixed value SHOULD be
 opague as well.
 
 # Privacy
+In order to maintain user privacy only the group membership API call should be 
+allowed by service providers. The other calls are not needed to determine 
+group membership, e.g. to base authorization on. If a user is a member of a 
+particular group certain privileges may be granted based on this fact.
+
+Only the `@me` user identifier should be allowed as to avoid providing unique
+user identifiers.
+
+If you make use of a proxy scenario where the proxy provider is trusted, Basic
+Authentication can be used with for instance the local `uid` of the user. The
+proxy then SHOULD take care of making this information opague towards the 
+client and generate new identifiers for the same user for different clients.
 
 # References
-
 
