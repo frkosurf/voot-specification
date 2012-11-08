@@ -33,22 +33,31 @@ use OAuth 2.0 for authorization towards clients while the proxy requests
 other VOOT endpoints protected by Basic Authentication. This can for example be
 helpful in "hub and spoke" identity federations.
 
-< PICTURE OF PROXY >
+                  +-------+              +----------+
+                  |       |              | VOOT     |
+                  |       +--------------+ Provider |
+                  |       |  VOOT/Basic  | A        |
+                  | VOOT  |              +----------+
+    --------------+ Proxy |
+      VOOT/OAuth  |       |              +----------+
+                  |       |              | VOOT     |
+                  |       +--------------+ Provider |
+                  |       |  VOOT/Basic  | B        |
+                  +-------+              +----------+
 
 # API
 The API supports three calls.
 
-The API calls make use of `@me` which is a placeholder for the user that 
-authorized the client. This of course only works when the application uses OAuth 
-2.0 as the access token used by the client is bound to the user that authorized 
-it.
+The API calls can make use of `@me` which is a placeholder for the user that 
+authorized the client. This only works when the application uses OAuth 2.0 as 
+the access token used by the client is bound to the user that authorized it.
 
 For the Basic Authentication case an actual user identifier and group 
-identifier need to be specified. It is out of scope how the client obtains 
-these identifiers.
+identifier MUST be specified, `@me` is not supported here. It is out of scope 
+how the client obtains the identifiers.
 
-If the user `admin` authorized a client to act on its behalf, the following
-calls have identical results:
+If the user `admin` authorized a client to act on its behalf (with OAuth), the 
+following calls have identical results:
 
     /groups/@me
     /groups/admin
@@ -59,9 +68,9 @@ calls have identical results:
     /people/@me
     /people/admin
 
-The calls using `@me` MUST be supported, the calls using the user identifier
-MUST be supported when using Basic Authentication and MAY be supported when
-using OAuth 2.0.
+The calls using `@me` MUST be supported when using OAuth 2.0, the calls using 
+the user identifier MUST be supported when using Basic Authentication and MAY 
+be supported when using OAuth 2.0.
 
 ## Retrieve Group Membership
 This call retrieves a list of all groups the user is a member of.
@@ -101,6 +110,8 @@ The `id` field contains a local (to this provider) unique identifier of the
 user. It SHOULD be opague to the client. The `displayName` field contains the
 name by which the user prefers to be addressed and can possibly be set by the
 user themselves at the provider. The `displayName` field is OPTIONAL.
+
+The user MUST be a member of the group being queried.
 
 ## Retrieve User Information
 This call retrieves additional information about a user.
@@ -372,5 +383,7 @@ with the identifier of the group provider. The prefixed value SHOULD be
 opague as well.
 
 # Privacy
-Opague value, @me, restricting people calls etc etc
+
+# References
+
 
