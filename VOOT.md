@@ -7,6 +7,11 @@ The API is loosly based on the OpenSocial specification, but this is just
 for historical reasons and not all requirements of OpenSocial are met. Only the 
 JSON data format is supported for example.
 
+# Notational Conventions
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", 
+"SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be 
+interpreted as described in [RFC 2119].
+
 # Use Cases
 All the use cases that are valid for LDAP are also valid for VOOT. For instance,
 requesting information about users, their group memberships and the members of
@@ -21,12 +26,11 @@ secure fashion. This is where VOOT steps in.
 # Authorization
 This specification will consider two authorization models:
 
-* Basic Authentication [RFC 2617] if the VOOT provider trusts the client not to
-  abuse full access to the user database;
+* Basic Authentication [RFC 2617] if the VOOT provider fully trusts the client 
+  or established means to enforce this trust through contracts;
 * OAuth 2.0 [RFC 6749] if there is minimal trust between the VOOT provider and 
-  the client where it is left to the user to authorize the client explicitly
-  that wants to access information about just the user that grants the 
-  permission.
+  the client where it is left to the user to explicitly authorize the client 
+  that wants to access data from the provider.
 
 # API
 The API supports three calls.
@@ -104,7 +108,7 @@ This call retrieves additional information about a user.
 
     /people/@me
 
-This call MUST be supported. The result can include the following keys with
+This call MAY be supported. The result can include the following keys with
 information about the user, where only `id` MUST be present:
 
 * `id`
@@ -394,4 +398,7 @@ proxy then SHOULD take care of making this information opague towards the
 client and generate new identifiers for the same user for different clients.
 
 # References
-
+* [RFC 2119](https://tools.ietf.org/html/rfc2119) Key words for use in RFCs to Indicate Requirement Levels
+* [RFC 2617](https://tools.ietf.org/html/rfc2617) HTTP Authentication: Basic and Digest Access Authentication
+* [RFC 6749](https://tools.ietf.org/html/rfc6749) The OAuth 2.0 Authorization Framework
+* [RFC 6750](https://tools.ietf.org/html/rfc6750) The OAuth 2.0 Authorization Framework: Bearer Token Usage
