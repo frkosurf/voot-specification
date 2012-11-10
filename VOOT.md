@@ -58,14 +58,16 @@ The VOOT API supports three calls:
 2. Retrieve the list of people belonging to a certain group;
 3. Retrieve information about the user.
 
-The API calls can make use of `@me` which can be used as a placeholder for the 
-actual user identifier that authorized the client to access the VOOT provider. 
-This only works when the application uses OAuth 2.0, as the access token used 
-by the client is bound to the user that authorized it.
+For the API calls one has to specify the user identifier for which the 
+information is retrieved. For API calls using OAuth 2.0 the `@me` placeholder 
+identifier MUST be supported which is replaced in the provider with the actual 
+user identifier that authorized the client to act on its behalf. With this 
+placeholder the client accessing information about the user does not need to 
+know the unique identifier of the user at the provider.
 
 For Basic Authentication an actual user identifier and group identifier MUST be 
 specified, `@me` is not supported here. It is out of scope how the client 
-obtains the identifiers. 
+obtains the identifiers of the users and groups.
 
 If the user `john` authorized a client to act on its behalf (with OAuth 2.0), 
 the following calls have identical results:
@@ -86,9 +88,8 @@ Retrieve user information for user `john`:
     /people/@me
     /people/john
 
-The calls using `@me` MUST be supported when using OAuth 2.0, the calls using 
-the user identifier MUST be supported when using Basic Authentication and MAY 
-be supported when using OAuth 2.0.
+For Basic Authentication only the calls that mention the actual user identifier
+is supported.
 
 ## Retrieve Group Membership
 This call retrieves a list of groups the user is a member of:
@@ -190,8 +191,8 @@ results. These parameters are OPTIONAL, if they are not provided or invalid the
 provider MUST consider `startIndex` equal to `0` and `count` equal to the total 
 number of items available in the entire set.
 
-The sorting, if requested, MUST be performed on the provider before considering 
-the `startIndex` and `count` parameters.
+The sorting, if requested, MUST be performed on the provider before applying 
+limiting the results based on the `startIndex` and `count` parameters.
 
 For the API call requesting user information the `sortBy` parameter has no 
 effect. Using `startIndex` and `count` is possible, however they are of little 
@@ -319,7 +320,7 @@ There are also some request errors defined, i.e.: invalid requests to the
 provider that should be dealt with in a certain manner. Only the call that 
 retrieves group membership MUST be supported, the other calls do not need to be 
 supported. When this call is disabled a response code of `400 Bad Request` is 
-returned with `error` set to `unsupported_request`.
+returned with `error` set to `invalid_request`.
 
 The error response is returned as JSON, for example:
 
@@ -338,10 +339,9 @@ The call looks like this:
     /groups/@me
 
 * If Basic Authentication is used and `@me` is used an error response with 
-  code `400 Bad Request` is returned. The `error` field contains 
-  `unsupported_user_identifier`. If a user identifier is specified instead of 
-  `@me` for providers not supporting the use of user identifiers the same error 
-  is returned;
+  code `404 Not Found` is returned. The `error` field contains `invalid_user`. 
+  If a user identifier is specified instead of `@me` for providers not 
+  supporting the use of user identifiers the same error is returned;
 * If the specified user does not exist at the provider an error response with
   code `404 Not Found` is returned. The `error` field contains 
   `invalid_user`;
@@ -355,10 +355,9 @@ The call looks like this:
     /people/@me/members
 
 * If Basic Authentication is used and `@me` is used an error response with 
-  code `400 Bad Request` is returned. The `error` field contains 
-  `unsupported_user_identifier`. If a user identifier is specified instead of 
-  `@me` for providers not supporting the use of user identifiers the same error 
-  is returned;
+  code `404 Not Found` is returned. The `error` field contains `invalid_user`. 
+  If a user identifier is specified instead of `@me` for providers not 
+  supporting the use of user identifiers the same error is returned;
 * If the specified user does not exist at the provider an error response with
   code `404 Not Found` is returned. The `error` field contains 
   `invalid_user`;
@@ -376,10 +375,10 @@ The call looks like this:
     /people/@me
 
 * If Basic Authentication is used and `@me` is used an error response with 
-  code `400 Bad Request` is returned. The `error` field contains 
-  `unsupported_user_identifier`. If a user identifier is specified instead of 
-  `@me` for providers not supporting the use of user identifiers the same error 
-  is returned;
+  code `404 Not Found` is returned. The `error` field contains `invalid_user`. 
+  If a user identifier is specified instead of `@me` for providers not 
+  supporting the use of user identifiers the same error is returned;
+
 * If the specified user does not exist at the provider an error response with
   code `404 Not Found` is returned. The `error` field contains 
   `invalid_user`;
