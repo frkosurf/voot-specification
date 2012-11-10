@@ -446,9 +446,9 @@ and not other identifying information such as `displayName`.
 * [RFC 6750](https://tools.ietf.org/html/rfc6750) The OAuth 2.0 Authorization Framework: Bearer Token Usage
 
 # Thanks
-* Maarten Kremers <maarten.kremers@surfnet.nl>
-* Andreas Åkre Solberg <x@example.org>
-* Leif Johansson <y@example.org>
+* Maarten Kremers `<maarten.kremers AT surfnet.nl>`
+* Andreas Åkre Solberg `<x@example.org>`
+* Leif Johansson `<y@example.org>`
 
 # Author
-* François Kooman <francois.kooman@surfnet.nl>
+* François Kooman `<francois.kooman@surfnet.nl>`
