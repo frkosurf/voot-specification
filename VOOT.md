@@ -407,15 +407,34 @@ to the group providers from which it needs to aggregate data.
 
 From the client's point of view there should be no difference in the API 
 compared to talking directly to a group provider. There are however some 
-special error cases that should be considered. For instance if the remote group 
-provider is not available. Also the group identifiers that were scoped locally 
-per group provider need to be modified to include a "scope", i.e. to indicate 
-to what group provider they belong.
+special error cases that should be considered. For instance if (one of) the 
+remote group providers is not available. Also the group identifiers that were 
+scoped locally per group provider need to be modified to include a "scope", 
+i.e. to indicate to what group provider they belong.
 
 For example the user `john`, which is a local identifier at a group provider 
 can occur in multiple group providers, so it needs to be matched to this 
 particular group provider, for example prefixed with the identifier of the 
 group provider. The prefixed value SHOULD be opaque to the client as well.
+
+# Identity Federation Considerations
+The VOOT protocol is not meant to authenticate users at a service. For this, 
+other mechanisms such as federated identity protocols like SAML, OpenID or
+BrowserID exists. What needs to be considered here is making sure the 
+identifiers used in the authentication layer are the same as used by the group 
+provider when exposing this information to clients.
+
+In SAML for instance there is the persistent opaque identifier provided to 
+RPs through the NameID value. This is an identifier that remains constant for 
+a particular user per RP. This way, RPs cannot match the same user between 
+themselves based on this identifier alone.
+
+This only needs to be considered when implementing the call that retrieves 
+group members. For just retrieving the group identifiers there can be any 
+mechanism to make the values opaque as this information is typically not 
+provided through the SAML assertion.
+
+*ADD MORE STUFF*
 
 # Privacy
 In order to maintain user privacy only the group membership API call should be 
