@@ -146,16 +146,14 @@ information about the user, where only `id` MUST be present:
 
 * `id`
 * `displayName`
-* `commonName`
-* `emails`
+* `mail`
 
 The `id` field contains a local (to this provider) unique identifier of the 
 user. It SHOULD be opaque to the client. The `displayName` field contains the
 name by which the user prefers to be addressed and can possibly be set by the
-user themselves at the provider. The `displayName` field is OPTIONAL. The
-`commonName` field contains the official full name of the user. This field 
-cannot be modified by the user themselves. The `emails` field contains a list
-of email addresses belonging to the user. 
+user themselves at the provider. The `displayName` field is OPTIONAL. The 
+`mail` field contains an email address belonging to the user, this field is
+also OPTIONAL.
 
 ## Request Parameters
 The API calls have three OPTIONAL parameters that manipulate the result 
@@ -171,8 +169,7 @@ the previous section:
 
 * `id`
 * `displayName`
-* `commonName`
-* `emails`
+* `mail`
 * `title`
 * `description`
 * `voot_membership_role`
@@ -265,13 +262,17 @@ The response looks like this:
     {
         "entry": [
             {
-                "id": "mwisdom", 
+                "displayName": "Bobby Mcatee", 
+                "id": "bmcatee", 
+                "mail": "bmcatee@students.example.edu", 
                 "voot_membership_role": "member"
             }, 
             {
-                "id": "bmcatee", 
+                "displayName": "Myra Wisdom", 
+                "id": "mwisdom", 
+                "mail": "mwisdom@students.example.edu", 
                 "voot_membership_role": "member"
-            }
+            }, 
         ], 
         "itemsPerPage": 2, 
         "startIndex": "3", 
@@ -290,15 +291,13 @@ The response looks like this:
     Content-Type: application/json
 
     {
-        "entry": {
-            "commonName": "Mr. Admin I. Strator", 
-            "displayName": "admin", 
-            "emails": [
-                "admin@example.org", 
-                "postmaster@example.org"
-            ], 
-            "id": "admin"
-        }, 
+        "entry": [
+            {
+                "displayName": "Bobby Mcatee", 
+                "id": "bmcatee", 
+                "mail": "bmcatee@students.example.edu"
+            }
+        ], 
         "itemsPerPage": 1, 
         "startIndex": 0, 
         "totalResults": 1
