@@ -5,10 +5,11 @@ across organizations. It can be seen as making a subset of LDAP-like
 information available through a web service.
 
 The API is loosely based on the OpenSocial specification and previous 
-standardization attempts as part of the [GN3-JRA3-T2] project, but this is just 
+standardization attempts as part of the [GN3-JRA3-T2] project. This is just 
 for historical reasons and not all requirements of OpenSocial nor previous 
 versions of VOOT are met. One such example is that only the JSON data format
-is supported. This specification does however aim to be backwards compatible.
+is supported. This specification does however aim to be backwards compatible
+requiring little to know change to existing VOOT software.
 
 # Notational Conventions
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", 
@@ -22,138 +23,136 @@ their group memberships and the members of a group. VOOT however is not meant
 to perform user authentication.
 
 Web applications sometimes have the ability to interface with LDAP directly to
-access information about users in the organization's directory (and authenticate 
-users), but this is notoriously hard or even impossible to get working 
-cross-domain in a secure fashion. This is where VOOT steps in.
+access information about users in the organization's directory (and 
+authenticate users), but this is notoriously hard or even impossible to get 
+working cross-domain in a secure way. This is where VOOT steps in.
 
 # Provider
 This document describes the protocol used between application (client) and 
-VOOT provider. The client uses a REST protocol to interact with the provider. 
-The protocol is protected using a mechanism described in the next section.
+VOOT provider. This documents specifies the VOOT API, which is a REST API.
+The protocol is protected using an authentication mechanism described in the 
+next section.
 
-    +--------+              +----------+            +-----------+
-    | VOOT   |              | VOOT     |            | User      |
-    | Client +--------------+ Provider +------------+ Group     |
-    |        |  VOOT/OAuth  |          |  LDAP/SQL  | Directory |
-    +--------+              +----------+            +-----------+
+    +--------+                    +----------+            +-----------+
+    | VOOT   |                    | VOOT     |            | User      |
+    | Client +--------------------+ Provider +------------+ Group     |
+    |        |  VOOT/OAuth/Basic  |          |  LDAP/SQL  | Directory |
+    +--------+                    +----------+            +-----------+
 
 # Authentication
-An application (client) has two ways to authenticate to the VOOT provider:
+An application (client) has two ways to authenticate to the VOOT provider, it 
+is up to the provider to support one, or both, of those:
 
 * Using Basic Authentication [RFC 2617] if the VOOT provider fully trusts the 
   client as the client will have full access to all data at the provider;
 * OAuth 2.0 [RFC 6749] if there is some trust between the VOOT provider and 
   the client where it is left to the user to explicitly authorize the client 
   that wants to access data from the provider. The user gives the client only
-  access to their data, and not to that of other users.
+  access to their data, and not to that of other users at the VOOT provider.
 
-Technically, OAuth 2.0 is an authorization framework and not primarily intedend 
-for authentication, however, from the point of view of the VOOT provider the 
-client authenticates using an access token.
+Technically, OAuth 2.0 is an authorization framework and not intendend for 
+authentication, however, from the point of view of the VOOT provider the 
+client authenticates to the API using an access token.
 
 # API
 The VOOT API supports three calls:
 
 1. Retrieve a list of groups the user is a member of;
-2. Retrieve the list of people belonging to a certain group;
-3. Retrieve information about the user.
+2. Retrieve information, i.e.: attributes of a user;
+3. Retrieve the list of people that are member of a group the user is also a
+   member of.
 
 For the API calls one has to specify the user identifier for which the 
 information is retrieved. For API calls using OAuth 2.0 the `@me` placeholder 
 identifier MUST be supported which is replaced in the provider with the actual 
 user identifier that authorized the client to act on its behalf. With this 
 placeholder the client accessing information about the user does not need to 
-know the unique identifier of the user at the provider.
+know the unique identifier of the user at the provider. Specifying an user
+identifier MAY be supported by the OAuth 2.0 protected provider, however this
+is not recommended.
 
 For Basic Authentication an actual user identifier and group identifier MUST be 
-specified, `@me` is not supported here. It is out of scope how the client 
-obtains the identifiers of the users and groups.
+specified, `@me` is not supported here due to the lack of binding with an user
+that authorized the client to act on its behalf. It is out of scope how the 
+client obtains the identifiers of the user, or group.
 
-If the user `john` authorized a client to act on its behalf (with OAuth 2.0), 
-the following calls have identical results:
-
-Retrieve group membership for the user `john`:
+If the user `john` authorized a client to act on its behalf, with an OAuth 2.0
+protected provider the following calls are defined, of which only the first one
+MUST be implemented:
 
     /groups/@me
-    /groups/john
-
-Retrieve group members for the group `students` where user `john` is a member 
-of:
-
-    /people/@me/students
-    /people/john/students
-
-Retrieve user information for user `john`:
-
     /people/@me
-    /people/john
+    /people/@me/students
 
-For Basic Authentication only the calls that mention the actual user identifier
-is supported.
+If information about the user `john` is queried by a client using Basic 
+Authentication the following calls are defined, of which only the first one
+MUST be implemented:
+
+    /groups/john
+    /people/john
+    /people/john/students
 
 ## Retrieve Group Membership
 This call retrieves a list of groups the user is a member of:
 
     /groups/@me
 
-This call MUST be supported. The result can include the following keys with
-information about the groups, where only `id` MUST be present:
+or
 
-* `id`
-* `title`
-* `description`
-* `voot_membership_role`
+    /groups/{userId}
 
-The `id` field contains a local (to the provider) unique identifier of the 
-group. It SHOULD be opaque to the client. The `title` field contains the 
-short human readable name of the group. The `description` field can contain a 
-longer description of the group with possibly its purpose. The field 
-`voot_membership_role` indicates the role the user has in that particular 
-group. It can be any of these values: `admin`, `manager` or `member`. 
+Where `{userId}` is replaced with an idenfier of the user at the provider. This
+call MUST be supported. The response can include the following keys:
+
+* (REQUIRED) `id`: The, to the provider, local unique identifier of the group;
+* (REQUIRED) `voot_membership_role`: The role the user has in this group;
+* (OPTIONAL) `title`: The short human readable name of the group;
+* (OPTIONAL) `description`: A description of the group.
+
+The `id` field SHOULD be opaque to the client. The field `voot_membership_role` 
+can be any of these values: `admin`, `manager` or `member`. 
 
 ## Retrieve Members of a Group
 This call retrieves a list of all members of a group the user is a member of:
 
     /people/@me/{groupId}
 
-Where `{groupId}` is replaced with a group identifier which was obtained 
-through the call used to retrieve Group Membership for a particular user.
+or
 
-This call MAY be supported. The result can include the following keys with
-information about the users that are a member of the group, where only `id` 
-MUST be present:
+    /people/{userId}/{groupId}
 
-* `id`
-* `displayName`
-* `voot_membership_role`
+Where `{userId}` is replaced with an idenfier of the user at the provider and
+`{groupId}` is replaced with a group identifier which was obtained through for
+instance the call used to retrieve group membership for a particular user.
 
-The `id` field contains a local (to this provider) unique identifier of the 
-user. It SHOULD be opaque to the client. The `displayName` field contains the
-name by which the user prefers to be addressed and can possibly be set by the
-user themselves at the provider. The `displayName` field is OPTIONAL. The field 
-`voot_membership_role` indicates the role the user has in that particular 
-group. It can be any of these values: `admin`, `manager` or `member`.
+This call MAY be supported. The response can include the following keys:
 
-The user MUST be a member of the group being queried.
+* (REQUIRED) `id`: The, to the provider, local unique identifier of the user;
+* (OPTIONAL) `displayName`: The name by which the user prefers to be addressed;
+* (OPTIONAL) `voot_membership_role`: The role the user has in this group;
+* (OPTIONAL) `mail`: The email address of the user;
+
+The `id` field SHOULD be opaque to the client. The field `voot_membership_role` 
+can be any of these values: `admin`, `manager` or `member`. The user MUST be a 
+member of the group being queried.
 
 ## Retrieve User Information
 This call retrieves additional information about a user.
 
     /people/@me
 
-This call MAY be supported. The result can include the following keys with
-information about the user, where only `id` MUST be present:
+or
 
-* `id`
-* `displayName`
-* `mail`
+    /people/{userId}
 
-The `id` field contains a local (to this provider) unique identifier of the 
-user. It SHOULD be opaque to the client. The `displayName` field contains the
-name by which the user prefers to be addressed and can possibly be set by the
-user themselves at the provider. The `displayName` field is OPTIONAL. The 
-`mail` field contains an email address belonging to the user, this field is
-also OPTIONAL.
+Where `{userId}` is replaced with an idenfier of the user at the provider. This
+call MAY be supported. The response can include the following keys:
+
+* (REQUIRED) `id`: The, to the provider, local unique identifier of the user;
+* (OPTIONAL) `displayName`: The name by which the user prefers to be addressed;
+* (OPTIONAL) `mail`: The email address of the user;
+
+The `id` field SHOULD be opaque to the client.
 
 ## Request Parameters
 The API calls have three OPTIONAL parameters that manipulate the result 
@@ -175,7 +174,7 @@ the previous section:
 * `voot_membership_role`
 
 If the key is not available in the set being sorted, the results are not sorted 
-or sorted at the providers discretion. It is up to the provider whether or not 
+or sorted at the provider's discretion. It is up to the provider whether or not 
 to sort and by what key in what order if these parameters are not present. 
 If the results are to be sorted, the value SHOULD be compared as strings and 
 SHOULD be sorted case-insensitive in ascending order.
@@ -186,18 +185,18 @@ indicates the number of results to be given back. The `startIndex` and `count`
 parameters can be used to implement paging by returning only a subset of the 
 results. These parameters are OPTIONAL, if they are not provided or invalid the 
 provider MUST consider `startIndex` equal to `0` and `count` equal to the total 
-number of items available in the entire set.
+number of items available in the entire set for the particular query.
 
 The sorting, if requested, MUST be performed on the provider before applying 
 limiting the results based on the `startIndex` and `count` parameters.
 
-For the API call requesting user information the `sortBy` parameter has no 
+For the API call, requesting user information, the `sortBy` parameter has no 
 effect. Using `startIndex` and `count` is possible, however they are of little 
-use as there always will be only one answer.
+use as there always will be only one answer, assuming the user exists.
 
 ## Response Parameters
-All responses mentioned above have the same JSON format. There are always four 
-keys:
+All responses mentioned above have the same JSON structure. There are always 
+four keys:
 
 * `startIndex`
 * `itemsPerPage`
@@ -206,9 +205,9 @@ keys:
 
 Where `startIndex` contains the offset from which the results are returned, 
 this is usually equals to the requested `startIndex`. The `itemsPerPage` 
-contains the actual number of results in the set, as part of `entry`, returned. 
-The `totalResults` field contains the full number of elements available, not 
-depending on the `startIndex` and `count` parameters.
+contains the actual number of results in the reponse set, as part of `entry`, 
+returned. The `totalResults` field contains the full number of elements 
+available, not depending on the `startIndex` and `count` parameters.
 
 The `entry` key contains a list of items, either groups, people or person 
 information. Below are some examples.
@@ -363,7 +362,7 @@ The call looks like this:
 * If the specified user is not a member of the group an error response with 
   code `403 Forbidden` is returned. The `error` field contains `not_a_member`.
   This response MUST be returned when the user is not a member, no matter 
-  whether the group exists or not;
+  whether the group actually exists or not;
 * If any other error occurs an error response with code 
   `500 Internal Server Error` is returned. The `error` field contains
   `internal_server_error`.
@@ -377,7 +376,6 @@ The call looks like this:
   code `404 Not Found` is returned. The `error` field contains `invalid_user`. 
   If a user identifier is specified instead of `@me` for providers not 
   supporting the use of user identifiers the same error is returned;
-
 * If the specified user does not exist at the provider an error response with
   code `404 Not Found` is returned. The `error` field contains 
   `invalid_user`;
@@ -424,9 +422,9 @@ identifiers used in the authentication layer are the same as used by the group
 provider when exposing this information to clients.
 
 In SAML for instance there is the persistent opaque identifier provided to 
-RPs through the NameID value. This is an identifier that remains constant for 
-a particular user per RP. This way, RPs cannot match the same user between 
-themselves based on this identifier alone.
+Service Provider (SP) through the NameID value. This is an identifier that 
+remains constant for a particular user per SP. This way, SPs cannot match the 
+same user between themselves based on this identifier alone.
 
 This only needs to be considered when implementing the call that retrieves 
 group members. For just retrieving the group identifiers there can be any 
@@ -451,11 +449,12 @@ The proxy then SHOULD take care of making this information opaque towards the
 client and generate new identifiers for the same user for different clients.
 
 The calls to retrieve group members are unacceptable from the point of view of
-user privacy. Even is OAuth 2.0 is used this would leak user identifiers of 
+user privacy. Even if OAuth 2.0 is used this would leak user identifiers of 
 other people to clients without the users that are a member of this group ever
 gave permissions for that. The impact of this can be minimized by making sure 
 only the unique, opaque user identifier of the user is mentioned in the result
-and not other identifying information such as `displayName`.
+and not other identifying information such as `displayName`. However, without
+these additional attributes this API call will be less useful.
 
 # References
 * [RFC 2119](https://tools.ietf.org/html/rfc2119) Key words for use in RFCs to Indicate Requirement Levels
