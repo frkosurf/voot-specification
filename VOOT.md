@@ -1,3 +1,10 @@
+                    __      ______   ____ _______
+                    \ \    / / __ \ / __ \__   __|
+                     \ \  / / |  | | |  | | | |
+                      \ \/ /| |  | | |  | | | |
+                       \  / | |__| | |__| | | |
+                        \/   \____/ \____/  |_|
+
 # Introduction
 VOOT x.x is a simple protocol for cross-domain read-only access to information
 about users and their group membership within an organization or aggregated
