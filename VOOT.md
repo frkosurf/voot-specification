@@ -99,6 +99,10 @@ MUST be implemented:
     /people/john
     /people/john/students
 
+
+## OAuth 
+Talk about OAuth scopes for the various calls?
+
 ## Retrieve Group Membership
 This call retrieves a list of groups the user is a member of:
 
