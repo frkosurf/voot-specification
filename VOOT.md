@@ -101,7 +101,16 @@ MUST be implemented:
 
 
 ## OAuth 
-Talk about OAuth scopes for the various calls?
+In order to retrieve data from the VOOT service, it is required that the client
+specifies what type of call it wants to perform. For any of the calls a 
+different scope is required. Multiple scopes can be combined:
+
+1. Retrieve a list of groups the user is a member of requires the scope 
+   `groups`;
+2. Retrieve information, i.e.: attributes of a user requires the scope 
+   `person`;
+3. Retrieve the list of people that are member of a group the user is also a
+   member of requires the scope `members`.
 
 ## Retrieve Group Membership
 This call retrieves a list of groups the user is a member of:
