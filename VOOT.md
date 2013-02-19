@@ -7,9 +7,9 @@
 
 # Introduction
 VOOT x.x is a simple protocol for cross-domain read-only access to information
-about users and their group membership within an organization or aggregated
-across organizations. It can be seen as making a subset of LDAP-like 
-information available through a web service.
+about users, their group membership within an organization or aggregated across 
+organizations and their role in these groups. It can be seen as making a subset 
+of LDAP-like information available through a web service.
 
 The API is loosely based on the OpenSocial specification and previous 
 standardization attempts as part of the [GN3-JRA3-T2] project. This is just 
@@ -99,7 +99,6 @@ MUST be implemented:
     /people/john
     /people/john/students
 
-
 ## OAuth 
 In order to retrieve data from the VOOT service, it is required that the client
 specifies what type of call it wants to perform. For any of the calls a 
@@ -154,7 +153,7 @@ This call MAY be supported. The response can include the following keys:
 
 The `id` field SHOULD be opaque to the client. The field `voot_membership_role` 
 can be any of these values: `admin`, `manager` or `member`. The user MUST be a 
-member of the group being queried.
+member, but not necessary have the role `member` of the group being queried.
 
 ## Retrieve User Information
 This call retrieves additional information about a user.
@@ -452,6 +451,18 @@ mechanism to make the values opaque as this information is typically not
 provided through the SAML assertion.
 
 *ADD MORE STUFF*
+
+# Roles
+The roles `admin`, `manager` and `member` are not well defined. Their actual
+semantics is based on what the application considers to be an `admin`, `manager` 
+or `member`. However, in general, the following can be said about the roles:
+
+* A user with role `admin` has more rights than a user with role `manager` or 
+  role `member`;
+* A user with role `manager` has more rights than a user with role `member`;
+
+For more fine grained roles the use of an entitlement based system is 
+recommended.
 
 # Privacy
 In order to maintain user privacy only the group membership API call should be 
