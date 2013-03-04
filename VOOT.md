@@ -149,11 +149,20 @@ This call MAY be supported. The response can include the following keys:
 * (REQUIRED) `id`: The, to the provider, local unique identifier of the user;
 * (OPTIONAL) `displayName`: The name by which the user prefers to be addressed;
 * (OPTIONAL) `voot_membership_role`: The role the user has in this group;
-* (OPTIONAL) `mail`: The email address of the user;
+* (OPTIONAL) `emails`: The email address(es) of the user;
 
 The `id` field SHOULD be opaque to the client. The field `voot_membership_role` 
 can be any of these values: `admin`, `manager` or `member`. The user MUST be a 
-member, but not necessary have the role `member` of the group being queried.
+member, but not necessary have the role `member` of the group being queried. The
+`emails` field SHOULD contain a list of email addresses which provides the
+type to be any of `work`, `home` or `other`. For example:
+
+    "emails": [
+        {
+            "type": "work",
+            "value": "bmcatee@students.example.edu"
+        }
+    ]
 
 ## Retrieve User Information
 This call retrieves additional information about a user.
@@ -169,9 +178,18 @@ call MAY be supported. The response can include the following keys:
 
 * (REQUIRED) `id`: The, to the provider, local unique identifier of the user;
 * (OPTIONAL) `displayName`: The name by which the user prefers to be addressed;
-* (OPTIONAL) `mail`: The email address of the user;
+* (OPTIONAL) `emails`: The email address(es) of the user;
 
-The `id` field SHOULD be opaque to the client.
+The `id` field SHOULD be opaque to the client. The `emails` field SHOULD 
+contain a list of email addresses which provides the type to be any of `work`, 
+`home` or `other`. For example:
+
+    "emails": [
+        {
+            "type": "work",
+            "value": "bmcatee@students.example.edu"
+        }
+    ]
 
 ## Request Parameters
 The API calls have three OPTIONAL parameters that manipulate the result 
@@ -187,7 +205,6 @@ the previous section:
 
 * `id`
 * `displayName`
-* `mail`
 * `title`
 * `description`
 * `voot_membership_role`
@@ -280,20 +297,30 @@ The response looks like this:
     {
         "entry": [
             {
-                "displayName": "Bobby Mcatee", 
-                "id": "bmcatee", 
-                "mail": "bmcatee@students.example.edu", 
+                "displayName": "Bobby Mcatee",
+                "emails": [
+                    {
+                        "type": "work",
+                        "value": "bmcatee@students.example.edu"
+                    }
+                ],
+                "id": "bmcatee",
                 "voot_membership_role": "member"
-            }, 
+            },
             {
-                "displayName": "Myra Wisdom", 
-                "id": "mwisdom", 
-                "mail": "mwisdom@students.example.edu", 
+                "displayName": "Myra Wisdom",
+                "emails": [
+                    {
+                        "type": "home",
+                        "value": "mwisdom@students.example.edu"
+                    }
+                ],
+                "id": "mwisdom",
                 "voot_membership_role": "member"
-            }, 
-        ], 
-        "itemsPerPage": 2, 
-        "startIndex": "3", 
+            }
+        ],
+        "itemsPerPage": 2,
+        "startIndex": "3",
         "totalResults": "7"
     }
 
@@ -311,13 +338,18 @@ The response looks like this:
     {
         "entry": [
             {
-                "displayName": "Bobby Mcatee", 
-                "id": "bmcatee", 
-                "mail": "bmcatee@students.example.edu"
+                "displayName": "Bobby Mcatee",
+                "emails": [
+                    {
+                        "type": "work",
+                        "value": "bmcatee@students.example.edu"
+                    }
+                ],
+                "id": "bmcatee"
             }
-        ], 
-        "itemsPerPage": 1, 
-        "startIndex": 0, 
+        ],
+        "itemsPerPage": 1,
+        "startIndex": 0,
         "totalResults": 1
     }
 
