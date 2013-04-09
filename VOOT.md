@@ -105,11 +105,14 @@ specifies what type of call it wants to perform. For any of the calls a
 different scope is required. Multiple scopes can be combined:
 
 1. Retrieve a list of groups the user is a member of requires the scope 
-   `groups`;
+   `http://openvoot.org/groups`;
 2. Retrieve information, i.e.: attributes of a user requires the scope 
-   `person`;
+   `http://openvoot.org/people`;
 3. Retrieve the list of people that are member of a group the user is also a
-   member of requires the scope `members`.
+   member of requires the scope `http://openvoot.org/members`.
+
+For backwards compatibility the scope `read` will give access to all the 
+above, assuming there are no other server side restrictions.
 
 ## Retrieve Group Membership
 This call retrieves a list of groups the user is a member of:
