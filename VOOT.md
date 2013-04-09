@@ -104,12 +104,12 @@ In order to retrieve data from the VOOT service, it is required that the client
 specifies what type of call it wants to perform. For any of the calls a 
 different scope is required. Multiple scopes can be combined:
 
-1. Retrieve a list of groups the user is a member of requires the scope 
+1. Retrieving a list of groups the user is a member of, requires the scope 
    `http://openvoot.org/groups`;
-2. Retrieve information, i.e.: attributes of a user requires the scope 
+2. Retrieving information, i.e.: attributes of a user, requires the scope 
    `http://openvoot.org/people`;
-3. Retrieve the list of people that are member of a group the user is also a
-   member of requires the scope `http://openvoot.org/members`.
+3. Retrieving the list of people that are member of a group the user is also a
+   member of, requires the scope `http://openvoot.org/members`.
 
 For backwards compatibility the scope `read` will give access to all the 
 above, assuming there are no other server side restrictions.
