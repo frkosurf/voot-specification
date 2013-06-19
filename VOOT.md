@@ -7,7 +7,7 @@
 
 # Introduction
 VOOT x.x is a simple protocol for cross-domain read-only access to information
-about users, their group membership within an organization or aggregated across 
+about users' group membership within an organization or aggregated across 
 organizations and their role in these groups. It can be seen as making a subset 
 of LDAP-like information available through a web service.
 
@@ -24,15 +24,16 @@ The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
 interpreted as described in [RFC 2119].
 
 # Use Cases
-All the use cases that are valid for accessing data from an organization's LDAP 
-are also valid for VOOT. For instance, requesting information about users, 
-their group memberships and the members of a group. VOOT however is not meant
-to perform user authentication.
+All the use cases that are valid for accessing group membership data from an 
+organization's LDAP are also valid for VOOT. For instance, requesting 
+information about users' group memberships and the members of a group. However,
+as opposed to LDAP, VOOT is not meant to perform user authentication.
 
 Web applications sometimes have the ability to interface with LDAP directly to
 access information about users in the organization's directory (and 
 authenticate users), but this is notoriously hard or even impossible to get 
-working cross-domain in a secure way. This is where VOOT steps in.
+working cross-domain in a secure way, except by using RADIUS, but this is 
+not supported by web browsers, so out of scope.
 
 # Provider
 This document describes the protocol used between application (client) and 
@@ -62,11 +63,10 @@ authentication, however, from the point of view of the VOOT provider the
 client authenticates to the API using an access token.
 
 # API
-The VOOT API supports three calls:
+The VOOT API supports two calls:
 
 1. Retrieve a list of groups the user is a member of;
-2. Retrieve information, i.e.: attributes of a user;
-3. Retrieve the list of people that are member of a group the user is also a
+2. Retrieve the list of people that are member of a group the user is also a
    member of.
 
 For the API calls one has to specify the user identifier for which the 
@@ -88,7 +88,6 @@ protected provider the following calls are defined, of which only the first one
 MUST be implemented:
 
     /groups/@me
-    /people/@me
     /people/@me/students
 
 If information about the user `john` is queried by a client using Basic 
@@ -96,7 +95,6 @@ Authentication the following calls are defined, of which only the first one
 MUST be implemented:
 
     /groups/john
-    /people/john
     /people/john/students
 
 ## OAuth 
@@ -106,9 +104,7 @@ different scope is required. Multiple scopes can be combined:
 
 1. Retrieving a list of groups the user is a member of, requires the scope 
    `http://openvoot.org/groups`;
-2. Retrieving information, i.e.: attributes of a user, requires the scope 
-   `http://openvoot.org/people`;
-3. Retrieving the list of people that are member of a group the user is also a
+2. Retrieving the list of people that are member of a group the user is also a
    member of, also requires the scope `http://openvoot.org/people`.
 
 For backwards compatibility the scope `read` will give access to all the 
@@ -159,33 +155,6 @@ can be any of these values: `admin`, `manager` or `member`. The user MUST be a
 member, but not necessary have the role `member` of the group being queried. The
 `emails` field SHOULD contain a list of email addresses which provides the
 type to be any of `work`, `home` or `other`. For example:
-
-    "emails": [
-        {
-            "type": "work",
-            "value": "bmcatee@students.example.edu"
-        }
-    ]
-
-## Retrieve User Information
-This call retrieves additional information about a user.
-
-    /people/@me
-
-or
-
-    /people/{userId}
-
-Where `{userId}` is replaced with an idenfier of the user at the provider. This
-call MAY be supported. The response can include the following keys:
-
-* (REQUIRED) `id`: The, to the provider, local unique identifier of the user;
-* (OPTIONAL) `displayName`: The name by which the user prefers to be addressed;
-* (OPTIONAL) `emails`: The email address(es) of the user;
-
-The `id` field SHOULD be opaque to the client. The `emails` field SHOULD 
-contain a list of email addresses which provides the type to be any of `work`, 
-`home` or `other`. For example:
 
     "emails": [
         {
@@ -327,35 +296,6 @@ The response looks like this:
         "totalResults": "7"
     }
 
-### Retrieve User Information
-This is an example of the response to the query:
-
-    Host: provider.example.org
-    GET /people/@me HTTP/1.1
-
-The response looks like this:
-
-    HTTP/1.1 200 OK
-    Content-Type: application/json
-
-    {
-        "entry": [
-            {
-                "displayName": "Bobby Mcatee",
-                "emails": [
-                    {
-                        "type": "work",
-                        "value": "bmcatee@students.example.edu"
-                    }
-                ],
-                "id": "bmcatee"
-            }
-        ],
-        "itemsPerPage": 1,
-        "startIndex": 0,
-        "totalResults": 1
-    }
-
 # Error Handling
 Handling failures of Authentication, either Basic or Bearer are handled in the 
 ways described in [RFC 2617] and [RFC 6750]. This will involve sending the 
@@ -420,23 +360,7 @@ The call looks like this:
 * If any other error occurs an error response with code 
   `500 Internal Server Error` is returned. The `error` field contains
   `internal_server_error`.
-
-### Retrieve User Information
-The call looks like this:
-
-    /people/@me
-
-* If Basic Authentication is used and `@me` is used an error response with 
-  code `404 Not Found` is returned. The `error` field contains `invalid_user`. 
-  If a user identifier is specified instead of `@me` for providers not 
-  supporting the use of user identifiers the same error is returned;
-* If the specified user does not exist at the provider an error response with
-  code `404 Not Found` is returned. The `error` field contains 
-  `invalid_user`;
-* If any other error occurs an error response with code 
-  `500 Internal Server Error` is returned. The `error` field contains
-  `internal_server_error`.
-
+  
 # Proxy Operation
 One of the use cases is to make it possible to combine data from various 
 group providers using one API service. This way group membership information
@@ -470,8 +394,8 @@ group provider. The prefixed value SHOULD be opaque to the client as well.
 
 # Identity Federation Considerations
 The VOOT protocol is not meant to authenticate users at a service. For this, 
-other mechanisms such as federated identity protocols like SAML, OpenID or
-BrowserID exists. What needs to be considered here is making sure the 
+other mechanisms such as federated identity protocols like SAML, OpenID Connect 
+or Mozilla Persona exists. What needs to be considered here is making sure the 
 identifiers used in the authentication layer are the same as used by the group 
 provider when exposing this information to clients.
 
@@ -497,7 +421,7 @@ or `member`. However, in general, the following can be said about the roles:
 * A user with role `manager` has more rights than a user with role `member`;
 
 For more fine grained roles the use of an entitlement based system is 
-recommended.
+recommended, which is out of scope of this specification.
 
 # Privacy
 In order to maintain user privacy only the group membership API call should be 
