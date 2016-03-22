@@ -5,6 +5,12 @@
                        \  / | |__| | |__| | | |
                         \/   \____/ \____/  |_|
 
+# NOTE: SPECIFICATION HAS MOVED
+
+*The VOOT specification is now maintained at http://openvoot.org/*
+
+This repository is an archive only.
+
 # Introduction
 VOOT x.x is a simple protocol for cross-domain read-only access to information
 about users' group membership within an organization or aggregated across 
